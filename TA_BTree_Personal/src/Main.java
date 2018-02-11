@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
+
     public static void main(String[] args) {
         Tree tree = new Tree();
         Scanner scanner;
@@ -16,6 +17,7 @@ public class Main {
         }
         Solution.twoKidsTraversal(tree);
     }
+    
 }
 
 class Tree {
