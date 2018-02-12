@@ -241,10 +241,8 @@ class Solution{
         root.setWeight(leftSum+rightSum+root.getKey());
     }
 
-    //ищет центр для найденной вершины с двумя детьми
+    //ищет центр для найденной вершины
     public static Tree.Node findCentreOfFinalNode(Tree.Node root) {
-        if (root.getLeft() == null || root.getRight() ==null || root.getIsSolution() == true)
-            return root;
         postOrderSetHeight(root, 0);
         ArrayList<Tree.Node> nodes = new ArrayList<>();
         nodes.add(root);
@@ -263,16 +261,16 @@ class Solution{
         Collections.sort(nodes, new Comparator<Tree.Node>() {
             @Override
             public int compare(Tree.Node o1, Tree.Node o2) {
-                return o1.getTemporateHeight()-o2.getTemporateHeight();
+                return o1.getKey()-o2.getKey();
             }
         });
-        return nodes.get(nodes.size()-1);
+        return nodes.get(nodes.size()/2);
     }
 
     public static void findCentreHelper(Tree.Node root, ArrayList<Tree.Node> nodes){
         while (true) {
             if (root.getLeft() != null && root.getRight() != null) {
-                if (root.getLeft().getTemporateHeight() < root.getRight().getTemporateHeight()) {
+                if (root.getLeft().getTemporateHeight() <= root.getRight().getTemporateHeight()) {
                     root = root.getLeft();
                     nodes.add(root);
                 } else {
