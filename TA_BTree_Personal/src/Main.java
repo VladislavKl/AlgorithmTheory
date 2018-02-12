@@ -145,22 +145,6 @@ class Tree {
 
 class Solution{
 
-    //checks if tree has vertexes with two kids
-    public static boolean checkIfDegenerative(Tree tree){
-        Tree.Node root = tree.getRoot();
-        while(true){
-            if (root.getLeft() != null && root.getRight() != null)
-                return false;
-            if (root.getLeft() != null){
-                root = root.getLeft();
-            } else if (root.getRight() != null){
-                root = root.getRight();
-            } else{
-                return true;
-            }
-        }
-    }
-
     //does all needed staff
     public static void mainSolution(){
         Tree tree = new Tree();
@@ -197,6 +181,40 @@ class Solution{
             }
         } else
             return;
+    }
+
+    //checks if tree has vertexes with two kids
+    public static boolean checkIfDegenerative(Tree tree){
+        Tree.Node root = tree.getRoot();
+        while(true){
+            if (root.getLeft() != null && root.getRight() != null)
+                return false;
+            if (root.getLeft() != null){
+                root = root.getLeft();
+            } else if (root.getRight() != null){
+                root = root.getRight();
+            } else{
+                return true;
+            }
+        }
+    }
+
+    //sets height for vertexes, choses min height if vertex has two kids
+    public static void postOrderSetHeight(Tree.Node root)throws StackOverflowError {
+        if (root!=null) {
+            postOrderSetHeight(root.getLeft());
+            postOrderSetHeight(root.getRight());
+            if (root.getLeft() == null && root.getRight() ==null)
+                root.setTemporateHeight(0);
+            else if (root.getLeft() == null)
+                root.setTemporateHeight(root.getRight().getTemporateHeight()+1);
+            else if (root.getRight() == null)
+                root.setTemporateHeight(root.getLeft().getTemporateHeight()+1);
+            else if (root.getLeft().getTemporateHeight()<root.getRight().getTemporateHeight())
+                root.setTemporateHeight(root.getLeft().getTemporateHeight()+1);
+            else
+                root.setTemporateHeight(root.getRight().getTemporateHeight()+1);
+        }
     }
 
     //chooses from array of vertexes with two kids the shortest, the lightest with a min root
@@ -296,22 +314,6 @@ class Solution{
         }
     }
 
-    //sets height for vertexes, choses min height if vertex has two kids
-    public static void postOrderSetHeight(Tree.Node root)throws StackOverflowError {
-        if (root!=null) {
-            postOrderSetHeight(root.getLeft());
-            postOrderSetHeight(root.getRight());
-            if (root.getLeft() == null && root.getRight() ==null)
-                root.setTemporateHeight(0);
-            else if (root.getLeft() == null)
-                root.setTemporateHeight(root.getRight().getTemporateHeight()+1);
-            else if (root.getRight() == null)
-                root.setTemporateHeight(root.getLeft().getTemporateHeight()+1);
-            else if (root.getLeft().getTemporateHeight()<root.getRight().getTemporateHeight())
-                root.setTemporateHeight(root.getLeft().getTemporateHeight()+1);
-            else
-                root.setTemporateHeight(root.getRight().getTemporateHeight()+1);
-        }
-    }
+
 
 }
