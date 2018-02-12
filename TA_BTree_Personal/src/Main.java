@@ -4,18 +4,7 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
-        Tree tree = new Tree();
-        Scanner scanner;
-        try {
-            scanner = new Scanner(new File("in.txt"));
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-            return;
-        }
-        while (scanner.hasNext()) {
-            tree.add(Integer.parseInt(scanner.next()));
-        }
-        Solution.mainSolution(tree);
+        Solution.mainSolution();
     }
 
 }
@@ -76,20 +65,12 @@ class Tree {
             this.weight = weight;
         }
 
-        public void setIsSolution(boolean solution) {
-            isSolution = solution;
-        }
-
-        public boolean getIsSolution(){
-            return isSolution;
-        }
         private int key;
         private int temporateHeight;
         private Node left;
         private Node right;
         private int length;
         private int weight;
-        private boolean isSolution;
     }
 
     public void add(int x) {
@@ -164,23 +145,52 @@ class Tree {
 
 class Solution{
 
-    //решение задачи
-    public static void mainSolution(Tree tree){
-        if (tree.getRoot() != null) {
-            postOrderHelper(tree.getRoot()); //для корня дерева находим наименьшую длину и наименьший вес
-            HashSet<Tree.Node> dupletes = new HashSet<>();
-            //вершина, которую нужно удалить
-            Tree.Node finalNode = chooseFromDupleteNodes(twoKidsTraversalHelper(tree.getRoot(), dupletes, true), tree.getRoot());
-            // в случае четности длины, можем найти центр полупути
-            if (finalNode.getLength() % 2 == 0) {
-                finalNode = findCentreOfFinalNode(finalNode); // ищем центр
-                tree.delete(tree.getRoot(), finalNode.getKey()); // удаляем
+    //checks if tree has vertexes with two kids
+    public static boolean checkIfDegenerative(Tree tree){
+        Tree.Node root = tree.getRoot();
+        while(true){
+            if (root.getLeft() != null && root.getRight() != null)
+                return false;
+            if (root.getLeft() != null){
+                root = root.getLeft();
+            } else if (root.getRight() != null){
+                root = root.getRight();
+            } else{
+                return true;
             }
+        }
+    }
+
+    //does all needed staff
+    public static void mainSolution(){
+        Tree tree = new Tree();
+        //takes vertexes from in.txt and puts it to the tree
+        Scanner scanner;
+        try {
+            scanner = new Scanner(new File("in.txt"));
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+            return;
+        }
+        while (scanner.hasNext()) {
+            tree.add(Integer.parseInt(scanner.next()));
+        }
+        if (tree.getRoot() != null) {
+            if (checkIfDegenerative(tree) != true) {
+                postOrderHelper(tree.getRoot());//sets the least heights to the vertexes
+                HashSet<Tree.Node> dupletes = new HashSet<>();
+                Tree.Node finalNode = chooseFromDupleteNodes(twoKidsTraversalHelper(tree.getRoot(), dupletes), tree.getRoot());
+                if (finalNode.getLength() % 2 == 0) {
+                    finalNode = findCentreOfFinalNode(finalNode);
+                    tree.delete(tree.getRoot(), finalNode.getKey());
+                }
+            }
+            //prints preorder tree
             FileWriter fout = null;
             try {
                 fout = new FileWriter("out.txt");
                 BufferedWriter bufferedWriter = new BufferedWriter(fout);
-                tree.preOrder(tree.getRoot(), bufferedWriter);// выводим в прямом порядке
+                tree.preOrder(tree.getRoot(), bufferedWriter);
                 bufferedWriter.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -189,7 +199,7 @@ class Solution{
             return;
     }
 
-    // из всех вершин с двумя детьми находит наменьшую по длине и весу, если у корня не два ребенка, возвращает onlyChildSolution
+    //chooses from array of vertexes with two kids the shortest, the lightest with a min root
     public static Tree.Node chooseFromDupleteNodes(HashSet<Tree.Node> dupletes, Tree.Node root) {
             Tree.Node result = (Tree.Node) dupletes.toArray()[0];
             Tree.Node temp;
@@ -205,30 +215,25 @@ class Solution{
             return result;
     }
 
-    // находит вершины с двумя детьми, находит их наименьший вес и наименьшую длину, запихивает в dupletes
-    public static HashSet<Tree.Node> twoKidsTraversalHelper(Tree.Node root, HashSet<Tree.Node> dupletes, boolean b)
+    //finds all vertexes with two kids and adds them to array
+    public static HashSet<Tree.Node> twoKidsTraversalHelper(Tree.Node root, HashSet<Tree.Node> dupletes)
             throws StackOverflowError{
-        if (b == true){
-            postOrderHelper(root);
-            dupletes.add(root);
-            b=false;
-        }
         if (root.getLeft() != null && root.getRight() != null){
             postOrderHelper(root);
             dupletes.add(root);
-            twoKidsTraversalHelper(root.getLeft(), dupletes, b);
-            twoKidsTraversalHelper(root.getRight(), dupletes, b);
+            twoKidsTraversalHelper(root.getLeft(), dupletes);
+            twoKidsTraversalHelper(root.getRight(), dupletes);
         } else if (root.getLeft() != null)
-            twoKidsTraversalHelper(root.getLeft(), dupletes, b);
+            twoKidsTraversalHelper(root.getLeft(), dupletes);
         else if (root.getRight() != null)
-            twoKidsTraversalHelper(root.getRight(), dupletes, b);
+            twoKidsTraversalHelper(root.getRight(), dupletes);
         return dupletes;
     }
-
-    // для заданной вершины находит длину наименьшего пути как сумма путей до ближайших листьев, а так же вес ее вес как сумму весов до ближайших листьев
+    
+    //for every vertex sets its shortest and lightest path
     public static void postOrderHelper(Tree.Node root){
-        postOrderSetHeight(root, 0);
-        int leftSum=0, rightSum=0,  leftTempHeight=-1, rightTempHeight=-1;
+        postOrderSetHeight(root);
+        int leftSum=0, rightSum=0,  leftTempHeight=0, rightTempHeight=0;
         if (root.getLeft() != null) {
             leftSum = lightestPath(root.getLeft(), root.getLeft().getKey());
             leftTempHeight = root.getLeft().getTemporateHeight();
@@ -241,82 +246,61 @@ class Solution{
         root.setWeight(leftSum+rightSum+root.getKey());
     }
 
-    //ищет центр для найденной вершины
-    public static Tree.Node findCentreOfFinalNode(Tree.Node root) {
-        postOrderSetHeight(root, 0);
-        ArrayList<Tree.Node> nodes = new ArrayList<>();
-        nodes.add(root);
-        Tree.Node leftKid;
-        Tree.Node rightKid;
-        if (root.getLeft() != null) {
-            leftKid = root.getLeft();
-            nodes.add(leftKid);
-            findCentreHelper(leftKid,nodes);
-        }
-        if (root.getRight() != null) {
-            rightKid = root.getRight();
-            nodes.add(rightKid);
-            findCentreHelper(rightKid, nodes);
-        }
-        Collections.sort(nodes, new Comparator<Tree.Node>() {
-            @Override
-            public int compare(Tree.Node o1, Tree.Node o2) {
-                return o1.getKey()-o2.getKey();
-            }
-        });
-        return nodes.get(nodes.size()/2);
-    }
-
-    public static void findCentreHelper(Tree.Node root, ArrayList<Tree.Node> nodes){
-        while (true) {
-            if (root.getLeft() != null && root.getRight() != null) {
-                if (root.getLeft().getTemporateHeight() <= root.getRight().getTemporateHeight()) {
+    //finds path for the root with the least weight
+    public static int lightestPath (Tree.Node root, int keySum) throws StackOverflowError{
+        while(true) {
+            if (root.getRight() != null && root.getLeft() != null) {
+                if (root.getLeft().getTemporateHeight() < root.getRight().getTemporateHeight()) {
+                    keySum += root.getLeft().getKey();
                     root = root.getLeft();
-                    nodes.add(root);
-                } else {
+                }
+                else if (root.getLeft().getTemporateHeight() > root.getRight().getTemporateHeight()) {
+                    keySum += root.getRight().getKey();
                     root = root.getRight();
-                    nodes.add(root);
-
+                }
+                else if (root.getLeft().getTemporateHeight() == root.getRight().getTemporateHeight()) {
+                    if (root.getLeft().getKey() < root.getRight().getKey()) {
+                        keySum += root.getLeft().getKey();
+                        root = root.getLeft();
+                    } else{
+                        keySum += root.getRight().getKey();
+                        root = root.getRight();
+                    }
                 }
             } else if (root.getLeft() != null) {
-                root = root.getLeft();
-                nodes.add(root);
+                keySum += root.getLeft().getKey();
+                root=root.getLeft();
             } else if (root.getRight() != null) {
-                root = root.getRight();
-                nodes.add(root);
-            } else {
-                return;
+                keySum += root.getRight().getKey();
+                root=root.getRight();
+            } else if (root.getRight() == null && root.getLeft() == null){
+                return keySum;
             }
         }
-
     }
 
-    // для заданной вершины выводит самый легкий путь
-    public static int lightestPath (Tree.Node root, int keySum) throws StackOverflowError{
-        if (root==null){
-            return 0;
-        } else if (root.getRight() != null && root.getLeft() != null){
-            int min = lightestPath(root.getLeft(), keySum+root.getLeft().getKey());
-            int temp = lightestPath(root.getRight(), keySum+root.getRight().getKey());
-            if (min<temp)
-                return min;
-            else
-                return temp;
-        } else if (root.getLeft() != null){
-            keySum += root.getLeft().getKey();
-            lightestPath(root.getLeft(),keySum);
-        } else if (root.getRight() != null){
-            keySum +=root.getRight().getKey();
-            lightestPath(root.getRight(), keySum);
+    //finds center for the halfpath's double vertex
+    public static Tree.Node findCentreOfFinalNode(Tree.Node root) {
+        postOrderSetHeight(root);
+        int diff = root.getLeft().getTemporateHeight()-root.getRight().getTemporateHeight();
+        if (diff == 0)
+            return root;
+        if (diff < 0) {
+            for (int i=0;i < -diff/2; ++i)
+                root=root.getRight();
+            return root;
+        } else {
+            for (int i=0;i < diff/2; ++i)
+                root=root.getLeft();
+            return root;
         }
-        return keySum;
     }
-    
-    // расставляет высоты вниз, начиная с заданной вершины, высота каждой вершины выставляется наименьшая из возможных
-    public static void postOrderSetHeight(Tree.Node root, int heightToSet)throws StackOverflowError {
+
+    //sets height for vertexes, choses min height if vertex has two kids
+    public static void postOrderSetHeight(Tree.Node root)throws StackOverflowError {
         if (root!=null) {
-            postOrderSetHeight(root.getLeft(), heightToSet);
-            postOrderSetHeight(root.getRight(), heightToSet);
+            postOrderSetHeight(root.getLeft());
+            postOrderSetHeight(root.getRight());
             if (root.getLeft() == null && root.getRight() ==null)
                 root.setTemporateHeight(0);
             else if (root.getLeft() == null)
