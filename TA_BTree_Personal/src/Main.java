@@ -15,9 +15,9 @@ public class Main {
         while (scanner.hasNext()) {
             tree.add(Integer.parseInt(scanner.next()));
         }
-        Solution.twoKidsTraversal(tree);
+        Solution.mainSolution(tree);
     }
-    
+
 }
 
 class Tree {
@@ -164,21 +164,23 @@ class Tree {
 
 class Solution{
 
-    public static void twoKidsTraversal(Tree tree){
+    //решение задачи
+    public static void mainSolution(Tree tree){
         if (tree.getRoot() != null) {
-            postOrderHelper(tree.getRoot());
-            Tree.Node solutionNode = tree.getRoot();
+            postOrderHelper(tree.getRoot()); //для корня дерева находим наименьшую длину и наименьший вес
             HashSet<Tree.Node> dupletes = new HashSet<>();
-            Tree.Node finalNode = chooseFromDupleteNodes(twoKidsTraversalHelper(tree.getRoot(), solutionNode, dupletes), tree.getRoot());
+            //вершина, которую нужно удалить
+            Tree.Node finalNode = chooseFromDupleteNodes(twoKidsTraversalHelper(tree.getRoot(), dupletes, true), tree.getRoot());
+            // в случае четности длины, можем найти центр полупути
             if (finalNode.getLength() % 2 == 0) {
-                finalNode = findCentreOfFinalNode(finalNode);
-                tree.delete(tree.getRoot(), finalNode.getKey());
+                finalNode = findCentreOfFinalNode(finalNode); // ищем центр
+                tree.delete(tree.getRoot(), finalNode.getKey()); // удаляем
             }
             FileWriter fout = null;
             try {
                 fout = new FileWriter("out.txt");
                 BufferedWriter bufferedWriter = new BufferedWriter(fout);
-                tree.preOrder(tree.getRoot(), bufferedWriter);
+                tree.preOrder(tree.getRoot(), bufferedWriter);// выводим в прямом порядке
                 bufferedWriter.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -187,8 +189,8 @@ class Solution{
             return;
     }
 
+    // из всех вершин с двумя детьми находит наменьшую по длине и весу, если у корня не два ребенка, возвращает onlyChildSolution
     public static Tree.Node chooseFromDupleteNodes(HashSet<Tree.Node> dupletes, Tree.Node root) {
-        if (dupletes.size() != 0 && root.getRight() != null && root.getLeft() != null) {
             Tree.Node result = (Tree.Node) dupletes.toArray()[0];
             Tree.Node temp;
             for (int i = 1; i < dupletes.size(); ++i) {
@@ -201,58 +203,29 @@ class Solution{
                     result = temp;
             }
             return result;
-        } else {
-            ArrayList<Tree.Node> temp=new ArrayList<>();
-            return onlyChildSolution(temp, root);
-        }
     }
 
-    public static Tree.Node onlyChildSolution(ArrayList<Tree.Node> dupletes, Tree.Node root){
-        dupletes.add(root);
-        postOrderSetHeight(root, 0);
-        while (true) {
-            if (root.getLeft() != null && root.getRight() != null) {
-                if (root.getLeft().getTemporateHeight()<root.getRight().getTemporateHeight()) {
-                    dupletes.add(root.getLeft());
-                    root = root.getLeft();
-                }
-                else {
-                    dupletes.add(root.getRight());
-                    root = root.getRight();
-                }
-            } else if (root.getRight() != null) {
-                dupletes.add(root.getRight());
-                root=root.getRight();
-            } else if (root.getLeft()!=null) {
-                dupletes.add(root.getLeft());
-                root=root.getLeft();
-            } else if (root.getRight() == null && root.getLeft() == null){
-                if (dupletes.size()%2 == 1) {
-                    dupletes.get(dupletes.size() / 2).setIsSolution(true);
-                    dupletes.get(dupletes.size() / 2).setLength(2);
-                    return (dupletes.get(dupletes.size() / 2));
-                }
-                Tree.Node temp=new Tree.Node(0);
-                temp.setLength(1);
-                return temp;
-            }
-        }
-    }
-
-    public static HashSet<Tree.Node> twoKidsTraversalHelper(Tree.Node root, Tree.Node solutionNode, HashSet<Tree.Node> dupletes)
+    // находит вершины с двумя детьми, находит их наименьший вес и наименьшую длину, запихивает в dupletes
+    public static HashSet<Tree.Node> twoKidsTraversalHelper(Tree.Node root, HashSet<Tree.Node> dupletes, boolean b)
             throws StackOverflowError{
+        if (b == true){
+            postOrderHelper(root);
+            dupletes.add(root);
+            b=false;
+        }
         if (root.getLeft() != null && root.getRight() != null){
             postOrderHelper(root);
             dupletes.add(root);
-            twoKidsTraversalHelper(root.getLeft(), solutionNode, dupletes);
-            twoKidsTraversalHelper(root.getRight(), solutionNode, dupletes);
+            twoKidsTraversalHelper(root.getLeft(), dupletes, b);
+            twoKidsTraversalHelper(root.getRight(), dupletes, b);
         } else if (root.getLeft() != null)
-            twoKidsTraversalHelper(root.getLeft(),solutionNode, dupletes);
+            twoKidsTraversalHelper(root.getLeft(), dupletes, b);
         else if (root.getRight() != null)
-            twoKidsTraversalHelper(root.getRight(),solutionNode, dupletes);
+            twoKidsTraversalHelper(root.getRight(), dupletes, b);
         return dupletes;
     }
 
+    // для заданной вершины находит длину наименьшего пути как сумма путей до ближайших листьев, а так же вес ее вес как сумму весов до ближайших листьев
     public static void postOrderHelper(Tree.Node root){
         postOrderSetHeight(root, 0);
         int leftSum=0, rightSum=0,  leftTempHeight=-1, rightTempHeight=-1;
@@ -268,34 +241,15 @@ class Solution{
         root.setWeight(leftSum+rightSum+root.getKey());
     }
 
-    public static int lightestPath (Tree.Node root, int keySum) throws StackOverflowError{
-        if (root==null){
-            return 0;
-        } else if (root.getRight() != null && root.getLeft() != null){
-           int min = lightestPath(root.getLeft(), keySum+root.getLeft().getKey());
-           int temp = lightestPath(root.getRight(), keySum+root.getRight().getKey());
-           if (min<temp)
-               return min;
-           else
-               return temp;
-       } else if (root.getLeft() != null){
-           keySum += root.getLeft().getKey();
-           lightestPath(root.getLeft(),keySum);
-       } else if (root.getRight() != null){
-           keySum +=root.getRight().getKey();
-           lightestPath(root.getRight(), keySum);
-       }
-       return keySum;
-    }
-
+    //ищет центр для найденной вершины с двумя детьми
     public static Tree.Node findCentreOfFinalNode(Tree.Node root) {
         if (root.getLeft() == null || root.getRight() ==null || root.getIsSolution() == true)
             return root;
         postOrderSetHeight(root, 0);
         ArrayList<Tree.Node> nodes = new ArrayList<>();
         nodes.add(root);
-        Tree.Node leftKid = new Tree.Node(0);
-        Tree.Node rightKid = new Tree.Node(0);
+        Tree.Node leftKid;
+        Tree.Node rightKid;
         if (root.getLeft() != null) {
             leftKid = root.getLeft();
             nodes.add(leftKid);
@@ -338,6 +292,29 @@ class Solution{
         }
 
     }
+
+    // для заданной вершины выводит самый легкий путь
+    public static int lightestPath (Tree.Node root, int keySum) throws StackOverflowError{
+        if (root==null){
+            return 0;
+        } else if (root.getRight() != null && root.getLeft() != null){
+            int min = lightestPath(root.getLeft(), keySum+root.getLeft().getKey());
+            int temp = lightestPath(root.getRight(), keySum+root.getRight().getKey());
+            if (min<temp)
+                return min;
+            else
+                return temp;
+        } else if (root.getLeft() != null){
+            keySum += root.getLeft().getKey();
+            lightestPath(root.getLeft(),keySum);
+        } else if (root.getRight() != null){
+            keySum +=root.getRight().getKey();
+            lightestPath(root.getRight(), keySum);
+        }
+        return keySum;
+    }
+    
+    // расставляет высоты вниз, начиная с заданной вершины, высота каждой вершины выставляется наименьшая из возможных
     public static void postOrderSetHeight(Tree.Node root, int heightToSet)throws StackOverflowError {
         if (root!=null) {
             postOrderSetHeight(root.getLeft(), heightToSet);
