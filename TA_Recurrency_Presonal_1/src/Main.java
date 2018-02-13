@@ -10,6 +10,7 @@ public class Main {
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
             return;
+
         }
         int K = Integer.parseInt(scanner.next());
         long A = Integer.parseInt(scanner.next());
