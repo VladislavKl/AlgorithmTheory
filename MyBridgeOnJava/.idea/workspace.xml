@@ -15,11 +15,9 @@
       <file leaf-file-name="Demo.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/company/lKvalsidalV/Demo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="26" column="1" lean-forward="true" selection-start-line="26" selection-start-column="1" selection-end-line="26" selection-end-column="1" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state relative-caret-position="75">
+              <caret line="5" column="27" lean-forward="false" selection-start-line="5" selection-start-column="27" selection-end-line="5" selection-end-column="27" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -192,12 +190,12 @@
       <updated>1518941707415</updated>
       <workItem from="1518941708752" duration="16000" />
       <workItem from="1518941798614" duration="171000" />
-      <workItem from="1518941998546" duration="789000" />
+      <workItem from="1518941998546" duration="1398000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="976000" />
+    <option name="totallyTimeSpent" value="1585000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1440" height="799" extended-state="0" />
@@ -253,11 +251,9 @@
     <entry file="file://$PROJECT_DIR$/src/com/company/lKvalsidalV/remotes/Remote.java" />
     <entry file="file://$PROJECT_DIR$/src/com/company/lKvalsidalV/Demo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="26" column="1" lean-forward="true" selection-start-line="26" selection-start-column="1" selection-end-line="26" selection-end-column="1" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="75">
+          <caret line="5" column="27" lean-forward="false" selection-start-line="5" selection-start-column="27" selection-end-line="5" selection-end-column="27" />
+          <folding />
         </state>
       </provider>
     </entry>
