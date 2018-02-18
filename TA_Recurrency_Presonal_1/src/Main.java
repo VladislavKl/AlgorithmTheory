@@ -28,23 +28,26 @@ public class Main {
                 e.printStackTrace();
             }
         }*/
+
         ArrayList<Number> numbers = new ArrayList<>();
         for (long i = 0; i < 10; ++i) {
-            numbers.add(new Number(i * 7, Solution.sumOfNumber(i * 7)));
+            numbers.add(new Number(i * 9, Solution.sumOfNumber(i * 9)));
         }
+
         for (int i=1; i<10; ++i){
             for (int j=0;j<10;++j){
                 numbers.add(new Number(0, numbers.get(i).getSum()+numbers.get(j).getSum()));
             }
         }
+
         ArrayList<Integer> integers = new ArrayList<>();
         for (int i=0;i<100;++i){
-            integers.add(Solution.sumOfNumber(i*7));
+            integers.add(Solution.sumOfNumber(i*9));
         }
 
       
-        for (int i=0; i<100; ++i){
-            System.out.println(i*7+"    "+integers.get(i)+"    "+numbers.get(i).getSum());
+        for (int i=0; i<10000; ++i){
+            System.out.println(i+"    "+Solution.sumOfNumber(i*9)+"    ");
         }
 
     }
