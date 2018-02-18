@@ -65,6 +65,11 @@ class Tree {
             this.weight = weight;
         }
 
+        @Override
+        public String toString() {
+            return key+" "+length+" "+weight;
+        }
+
         private int key;
         private int temporateHeight;
         private Node left;
@@ -163,7 +168,19 @@ class Solution{
             if (checkIfDegenerative(tree) != true) {
                 postOrderHelper(tree.getRoot());//sets the least heights to the vertexes
                 HashSet<Tree.Node> dupletes = new HashSet<>();
-                Tree.Node finalNode = chooseFromDupleteNodes(twoKidsTraversalHelper(tree.getRoot(), dupletes), tree.getRoot());
+                Tree.Node finalNode = Collections.min(twoKidsTraversalHelper(tree.getRoot(), dupletes), new Comparator<Tree.Node>() {
+                    @Override
+                    public int compare(Tree.Node o1, Tree.Node o2) {
+                        if (o1.getLength() != o2.getLength())
+                            return o1.getLength()-o2.getLength();
+                        else if (o1.getWeight() != o2.getWeight())
+                            return o1.getWeight()-o2.getWeight();
+                        else if (o1.getLength() == o2.getLength() && o1.getWeight() == o2.getWeight() && o1.getKey() != o2.getKey())
+                            return o1.getKey()-o2.getKey();
+                        else
+                            return o1.getKey()-o2.getKey();
+                    }
+                });
                 if (finalNode.getLength() % 2 == 0) {
                     finalNode = findCentreOfFinalNode(finalNode);
                     tree.delete(tree.getRoot(), finalNode.getKey());
@@ -218,20 +235,9 @@ class Solution{
     }
 
     //chooses from array of vertexes with two kids the shortest, the lightest with a min root
-    public static Tree.Node chooseFromDupleteNodes(HashSet<Tree.Node> dupletes, Tree.Node root) {
-            Tree.Node result = (Tree.Node) dupletes.toArray()[0];
-            Tree.Node temp;
-            for (int i = 1; i < dupletes.size(); ++i) {
-                temp = (Tree.Node) dupletes.toArray()[i];
-                if (result.getLength() > temp.getLength())
-                    result = temp;
-                else if (result.getWeight() > temp.getWeight())
-                    result = temp;
-                else if (result.getLength() == temp.getLength() && result.getWeight() == temp.getWeight() && result.getKey() > temp.getKey())
-                    result = temp;
-            }
-            return result;
-    }
+   /* public static Tree.Node chooseFromDupleteNodes(HashSet<Tree.Node> dupletes, Tree.Node root) {
+
+    }*/
 
     //finds all vertexes with two kids and adds them to array
     public static HashSet<Tree.Node> twoKidsTraversalHelper(Tree.Node root, HashSet<Tree.Node> dupletes)
