@@ -1,8 +1,8 @@
 package com.company.lKvalsidalV.devices;
 
 public class TV implements Device {
-    private boolean on = false;
-    private int volume = 30;
+    private boolean on = true;
+    private int volume = 13;
     private int channel = 1;
 
     @Override
