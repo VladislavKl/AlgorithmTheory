@@ -33,10 +33,14 @@ class MinDir{
 
     @Override
     public String toString() {
-        String out=minLength+"\n";
-        for (Solution.Dot temp : dots)
-            out+=temp.direction+"\n";
-        return out;
+        StringBuffer stringBuffer=new StringBuffer();
+        stringBuffer.append(minLength);
+        stringBuffer.append("\n");
+        for (Solution.Dot temp : dots) {
+            stringBuffer.append(temp.direction);
+            stringBuffer.append("\n");
+        }
+        return stringBuffer.toString();
     }
 
 }
@@ -66,7 +70,7 @@ class Solution{
         public int x;
         public int y;
         public int size;
-        public String availableDirections[] = {"UP", "DOWN", "LEFT", "RIGHT"};
+        public String availableDirections[];
         public int leftBorder;
         public int rightBorder;
         public int upBorder;
@@ -99,7 +103,7 @@ class Solution{
 
     //writes solution to the file
     public static void writeToFile(MinDir minDir) {
-        FileWriter fout = null;
+        FileWriter fout;
         try {
             fout = new FileWriter("output.txt");
             BufferedWriter bufferedWriter = new BufferedWriter(fout);
@@ -144,31 +148,57 @@ class Solution{
     public static boolean crossingCheck(Dot a, Dot b){
         if ((a.x == b.x) &&
                 ((a.upBorder < b.upBorder &&
-                (a.direction == "DOWN" || b.direction == "UP"))
+                (a.direction.equals("DOWN") || b.direction.equals("UP")))
                 ||
                 (a.upBorder > b.upBorder &&
-                        (b.direction == "DOWN" || a.direction == "UP"))))
+                        (b.direction.equals("DOWN") || a.direction.equals("UP")))))
             return true;
         if ((a.y == b.y) &&
                 ((a.leftBorder < b.leftBorder &&
-                        (b.direction == "LEFT" || a.direction == "RIGHT"))
+                        (b.direction.equals("LEFT") || a.direction.equals("RIGHT")))
                         ||
-                        ( a.leftBorder > b.leftBorder && (a.direction == "LEFT" || b.direction == "RIGHT"))))
+                        ( a.leftBorder > b.leftBorder && (a.direction.equals("LEFT") || b.direction.equals("RIGHT")))))
             return true;
         if (a.x<b.x && a.y < b.y){
-            if ((a.direction == "RIGHT" && b.direction == "DOWN") || (a.direction == "UP" && b.direction == "LEFT"))
+            if ((a.direction.equals("RIGHT") && b.direction.equals("DOWN")) || (a.direction.equals("UP") && b.direction.equals("LEFT")))
                 return true;
         }
         if (a.x<b.x && a.y > b.y){
-            if ((a.direction == "DOWN" && b.direction == "LEFT") || (a.direction == "RIGHT" && b.direction == "UP"))
+            if ((a.direction.equals("DOWN") && b.direction.equals("LEFT")) || (a.direction.equals("RIGHT") && b.direction.equals("UP")))
                 return true;
         }
         if (a.x>b.x){
-            Dot tempA = b;
-            Dot tempB = a;
-            crossingCheck(tempA, tempB);
+            crossingCheck(b, a);
         }
         return false;
+    }
+
+
+
+    //Helper function so that java won't just cope a link to an object
+    public static Dot[] createArrayCopy(Dot[] dots){
+        Dot[] temp = new Dot[dots.length];
+        for (int i=0; i< dots.length; ++i) {
+            Solution.Dot kaka = new Solution.Dot(dots[i].size, dots[i].x, dots[i].y, dots[i].availableDirections, dots[i].direction);
+            temp[i] = kaka;
+        }
+        return temp;
+    }
+
+    //Summary of connections' length
+    public static int directionsSummary(Dot[] dots){
+        int sum = 0;
+        for (Dot temp : dots){
+            if (temp.direction.equals("UP"))
+                sum += temp.upBorder;
+            if (temp.direction.equals("DOWN"))
+                sum += temp.downBorder;
+            if (temp.direction.equals("LEFT"))
+                sum += temp.leftBorder;
+            if (temp.direction.equals("RIGHT"))
+                sum += temp.rightBorder;
+        }
+        return sum;
     }
 
     //Main Solution recursive function
@@ -180,31 +210,31 @@ class Solution{
                 dots[numberOfDot].direction = "UP";
                 for (int i = 0; i < dots.length; ++i) {
                     for (int j = i + 1; j < dots.length; ++j) {
-                        if (crossingCheck(dots[i], dots[i]) == true) {
+                        if (crossingCheck(dots[i], dots[i])) {
                             b = false;
                             i = dots.length;
                             j = dots.length;
                         }
                     }
                 }
-                if (b == true && minDir.minLength > directionsSummary(dots)) {
+                if (b && minDir.minLength > directionsSummary(dots)) {
                     minDir.minLength = directionsSummary(dots);
                     minDir.setDots(dots);
                 }
             }
-                b = true;
+            b = true;
             if (wayExists(dots, numberOfDot, "DOWN")) {
                 dots[numberOfDot].direction = "DOWN";
                 for (int i = 0; i < dots.length; ++i) {
                     for (int j = i + 1; j < dots.length; ++j) {
-                        if (crossingCheck(dots[i], dots[i]) == true) {
+                        if (crossingCheck(dots[i], dots[i])) {
                             b = false;
                             i = dots.length;
                             j = dots.length;
                         }
                     }
                 }
-                if (b == true && minDir.minLength > directionsSummary(dots)) {
+                if (b && minDir.minLength > directionsSummary(dots)) {
                     minDir.minLength = directionsSummary(dots);
                     minDir.setDots(dots);
                 }
@@ -214,14 +244,14 @@ class Solution{
                 dots[numberOfDot].direction = "LEFT";
                 for (int i = 0; i < dots.length; ++i) {
                     for (int j = i + 1; j < dots.length; ++j) {
-                        if (crossingCheck(dots[i], dots[i]) == true) {
+                        if (crossingCheck(dots[i], dots[i])) {
                             b = false;
                             i = dots.length;
                             j = dots.length;
                         }
                     }
                 }
-                if (b == true && minDir.minLength > directionsSummary(dots)) {
+                if (b && minDir.minLength > directionsSummary(dots)) {
                     minDir.minLength = directionsSummary(dots);
                     minDir.setDots(dots);
                 }
@@ -231,19 +261,18 @@ class Solution{
                 dots[numberOfDot].direction = "RIGHT";
                 for (int i = 0; i < dots.length; ++i) {
                     for (int j = i + 1; j < dots.length; ++j) {
-                        if (crossingCheck(dots[i], dots[i]) == true) {
+                        if (crossingCheck(dots[i], dots[i])) {
                             b = false;
                             i = dots.length;
                             j = dots.length;
                         }
                     }
                 }
-                if (b == true && minDir.minLength > directionsSummary(dots)) {
+                if (b && minDir.minLength > directionsSummary(dots)) {
                     minDir.minLength = directionsSummary(dots);
                     minDir.setDots(dots);
                 }
             }
-            return;
         }
         else {
             if (wayExists(dots, numberOfDot, "UP")) {
@@ -266,38 +295,13 @@ class Solution{
         }
     }
 
-    //Helper function so that java won't just cope a link to an object
-    public static Dot[] createArrayCopy(Dot[] dots){
-        Dot[] temp = new Dot[dots.length];
-        for (int i=0; i< dots.length; ++i) {
-            Solution.Dot kaka = new Solution.Dot(dots[i].size, dots[i].x, dots[i].y, dots[i].availableDirections, dots[i].direction);
-            temp[i] = kaka;
-        }
-        return temp;
-    }
-
-    //Summary of connections' length
-    public static int directionsSummary(Dot[] dots){
-        int sum = 0;
-        for (int i = 0; i < dots.length; ++i){
-            if (dots[i].direction == "UP")
-                sum += dots[i].upBorder;
-            if (dots[i].direction == "DOWN")
-                sum += dots[i].downBorder;
-            if (dots[i].direction == "LEFT")
-                sum += dots[i].leftBorder;
-            if (dots[i].direction == "RIGHT")
-                sum += dots[i].rightBorder;
-        }
-        return sum;
-    }
-
 
     public static boolean wayExists(Dot[] dots, int numberOfDot, String dir){
         dots[numberOfDot].availableDirections = new String[] {"UP", "DOWN", "LEFT", "RIGHT"};
+        checkAvailability(dots);
         cuttingDirections(dots, numberOfDot);
-        if (dots[numberOfDot].availableDirections[0] == dir || dots[numberOfDot].availableDirections[1] == dir
-                || dots[numberOfDot].availableDirections[2] == dir || dots[numberOfDot].availableDirections[3] == dir) {
+        if (dots[numberOfDot].availableDirections[0].equals(dir) || dots[numberOfDot].availableDirections[1].equals(dir)
+                || dots[numberOfDot].availableDirections[2].equals(dir) || dots[numberOfDot].availableDirections[3].equals(dir)) {
             Dot[] temp = new Dot[dots.length];
             for (int i=0; i<dots.length; ++i) {
                 Dot kaka = new Dot(dots[i].size, dots[i].x, dots[i].y, dots[i].availableDirections, dots[i].direction);
@@ -305,8 +309,7 @@ class Solution{
             }
             temp[numberOfDot].direction = dir;
             cuttingDirections(temp, numberOfDot);
-            if (dots[numberOfDot].availableDirections[0] == null && dots[numberOfDot].availableDirections[1] == null
-                    && dots[numberOfDot].availableDirections[2] == null && dots[numberOfDot].availableDirections[3] == null)
+            if (dots[numberOfDot].availableDirections == new String[] {null,null,null,null} )
                 return false;
             return true;
         }
@@ -316,25 +319,25 @@ class Solution{
 
     public static void cuttingDirections(Dot[] dots, int numberOfDot){
         for (int i = 0; i<numberOfDot; ++i){
-            if (dots[numberOfDot].direction == "UP" && dots[numberOfDot].upBorder >= dots[i].upBorder){
+            if (dots[numberOfDot].direction.equals("UP") && dots[numberOfDot].upBorder >= dots[i].upBorder){
                 if (dots[numberOfDot].leftBorder >= dots[i].leftBorder)
                     dots[i].availableDirections[3] = null;
                 else
                     dots[i].availableDirections[2] = null;
             }
-            if (dots[numberOfDot].direction == "DOWN" && dots[numberOfDot].downBorder >= dots[i].downBorder) {
+            if (dots[numberOfDot].direction.equals("DOWN") && dots[numberOfDot].downBorder >= dots[i].downBorder) {
                 if (dots[numberOfDot].leftBorder >= dots[i].leftBorder)
                     dots[i].availableDirections[3] = null;
                 else
                     dots[i].availableDirections[2] = null;
             }
-            if (dots[numberOfDot].direction == "LEFT" && dots[numberOfDot].leftBorder >= dots[i].leftBorder){
+            if (dots[numberOfDot].direction.equals("LEFT") && dots[numberOfDot].leftBorder >= dots[i].leftBorder){
                 if (dots[numberOfDot].downBorder >= dots[i].downBorder)
                     dots[i].availableDirections[0] = null;
                 else
                     dots[i].availableDirections[1] = null;
             }
-            if (dots[numberOfDot].direction == "RIGHT" && dots[numberOfDot].rightBorder >= dots[i].rightBorder){
+            if (dots[numberOfDot].direction.equals("RIGHT") && dots[numberOfDot].rightBorder >= dots[i].rightBorder){
                 if (dots[numberOfDot].downBorder >= dots[i].downBorder)
                     dots[i].availableDirections[0] = null;
                 else
