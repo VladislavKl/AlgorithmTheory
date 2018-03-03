@@ -1,129 +1,58 @@
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 
-class Number {
-
-    public Number() {
-        num=0;
-        summary=0;
-    }
-
-    public Number(int a, int b) {
-        num=a;
-        summary=b;
-    }
-
-    public void setNum(int num) {
-        this.num = num;
-    }
-
-    public int getNum() {
-        return num;
-    }
-
-    public int getSummary() {
-        return summary;
-    }
-
-    public void setSummary(int summary) {
-        this.summary = summary;
-    }
-
-    private int num;
-    private int summary;
-}
 
 class Solution {
-    public static Double mainSolution(int K, Double A, Double B, int P, int Q) {
-        if (B <= 1000)
-            return lessThan1000(K, A, B, P, Q);
-        Double counterA = 0., counterB = 0.;
-        ArrayList<ArrayList<Number>> array = new ArrayList<>();
-        for (int i=0; i<K;++i) {
-            ArrayList<Number> temp = new ArrayList<>();
-            for (int j=i;j<1000;j+=K) {
-                temp.add(new Number(j , digitSummary(j)));
-                if (i==0. && withinRange(temp.get(temp.size()-1).getSummary(), P, Q) && j<=B) {
-                    ++counterB;
-                    if (j<A)
-                        ++counterA;
+
+    public static void parseNumberAndFindResidues(long[] rem, long[] digits, long N, int K){
+        for (int i = 0; i < 19; ++i) {
+            digits[i] = N % 10;
+            N /= 10;
+        }
+
+        rem[0] = 1;
+        for (int i = 1; i < 19; ++i) {
+            rem[i] = (rem[i - 1] * 10) % K;
+        }
+    }
+    
+    public static Long mainSolution(int K, long N, int P, int Q) {
+        long[][][][] matrix = new long[20][100][163][2];
+        long rem[] = new long[20], digits[] = new long[20];
+
+        parseNumberAndFindResidues(rem, digits, N, K);
+        
+        matrix[19][0][0][0] = 1;
+
+        for (int digitNumber = 19; digitNumber > 0; --digitNumber) {
+            for (int remainder = 0; remainder < K; ++remainder) {
+                for (int digitSum = 0; digitSum <= 9 * (19 - digitNumber); ++digitSum) {
+                    for (int l = 0; l < 2; ++l) {
+                        if (matrix[digitNumber][remainder][digitSum][l] == 0)
+                            continue;
+                        long m = digits[digitNumber - 1];
+                        if (l == 1)
+                            m = 9;
+                        for (int j = 0; j <= m; ++j) {
+                            int temp = 1;
+                            if (l != 1 && j == m)
+                                temp = 0;
+                            matrix[digitNumber - 1][(int)((remainder + j * rem[digitNumber - 1]) % K)][digitSum + j][temp]
+                                    += matrix[digitNumber][remainder][digitSum][l];
+                        }
+                    }
                 }
             }
-            array.add(temp);
         }
 
-        ArrayList<Integer> fissionResidues = new ArrayList<>();
-        int realNumber = array.get(0).get(array.get(0).size()-1).getNum() + K - 1000;
-        fissionResidues.add(realNumber);
-        for (;;) {
-            realNumber = array.get(realNumber).get(array.get(realNumber).size() - 1).getNum() + K - 1000;
-            fissionResidues.add(realNumber);
-            if (fissionResidues.get(0).equals(fissionResidues.get(fissionResidues.size()-2)) &&
-                    fissionResidues.get(fissionResidues.size()-1).equals(fissionResidues.get(1))) {
-                fissionResidues.remove(fissionResidues.size()-1);
-                fissionResidues.remove(fissionResidues.size()-1);
-                break;
-            }
+        long ans = 0;
+        for (int i = P; i <= Q; ++i) {
+            ans += matrix[0][0][i][0] + matrix[0][0][i][1];
         }
-
-
-
-
-
-        Double lowerBound = A/1000;
-        Double upperBound = B/1000;
-        for (Double i = 1.; i < upperBound + 1; ++i) {
-            int size = array.get(realNumber).size();
-            int dig = digitsSummary(i);
-            for (int j = 0; j < size; ++j) {
-                if (withinRange(array.get(realNumber).get(j).getSummary() + dig, P, Q)) {
-                    if (i < lowerBound)
-                        ++counterA;
-                    if (i.equals(lowerBound) && j*K < A%1000)
-                        ++counterA;
-                    ++counterB;
-                }
-            }
-            realNumber = array.get(realNumber).get(array.get(realNumber).size() - 1).getNum() + K - 1000;
-        }
-
-        return (counterB-counterA);
+        return ans;
     }
 
-    public static Double lessThan1000(int K, Double A, Double B, int P, int Q){
-        Double newc=0.;
-        for (Double i=A;i<=B;i+=K) {
-            if (withinRange(digitsSummary(i), P, Q))
-                ++newc;
-        }
-        return newc;
-    }
-
-    public static int digitsSummary(Double num) {
-        int sum=0;
-        while (num != 0) {
-            sum += num%10;
-            num/=10;
-        }
-        return sum;
-    }
-
-    public static int digitSummary(int num) {
-        int sum=0;
-        while (num != 0) {
-            sum += num%10;
-            num/=10;
-        }
-        return sum;
-    }
-
-    public static boolean withinRange(int dig, int P, int Q){
-        if (dig>=P && dig<=Q)
-            return true;
-        return false;
-    }
 }
 
 
@@ -140,17 +69,15 @@ public class Main {
             return;
         }
         int K = Integer.parseInt(scanner.next());
-        Double A = Double.parseDouble(scanner.next());
-        Double B = Double.parseDouble(scanner.next());
+        Long A = Long.parseLong(scanner.next());
+        Long B = Long.parseLong(scanner.next());
         int P = Integer.parseInt(scanner.next());
         int Q = Integer.parseInt(scanner.next());
-        double r = Solution.mainSolution(K, A, B, P, Q);
-        int result = (int) r;
         FileWriter fout;
         try {
             fout = new FileWriter("output.txt");
             BufferedWriter bufferedWriter = new BufferedWriter(fout);
-            fout.write(result + "");
+            fout.write( (Solution.mainSolution(K, B, P, Q) - Solution.mainSolution(K, A-1, P, Q)) + "");
             bufferedWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
