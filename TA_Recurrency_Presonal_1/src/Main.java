@@ -6,28 +6,28 @@ import java.util.Scanner;
 class Solution {
 
     public static void parseNumberAndFindResidues(long[] rem, long[] digits, long N, int K){
-        for (int i = 0; i < 19; ++i) {
+        for (int i = 0; i < 3; ++i) {
             digits[i] = N % 10;
             N /= 10;
         }
 
         rem[0] = 1;
-        for (int i = 1; i < 19; ++i) {
+        for (int i = 1; i < 3; ++i) {
             rem[i] = (rem[i - 1] * 10) % K;
         }
     }
-    
+
     public static Long mainSolution(int K, long N, int P, int Q) {
-        long[][][][] matrix = new long[20][100][163][2];
-        long rem[] = new long[20], digits[] = new long[20];
+        long[][][][] matrix = new long[4][8][28][2];
+        long rem[] = new long[3], digits[] = new long[3];
 
         parseNumberAndFindResidues(rem, digits, N, K);
         
-        matrix[19][0][0][0] = 1;
+        matrix[3][0][0][0] = 1;
 
-        for (int digitNumber = 19; digitNumber > 0; --digitNumber) {
+        for (int digitNumber = 3; digitNumber > 0; --digitNumber) {
             for (int remainder = 0; remainder < K; ++remainder) {
-                for (int digitSum = 0; digitSum <= 9 * (19 - digitNumber); ++digitSum) {
+                for (int digitSum = 0; digitSum <= 9 * (3 - digitNumber); ++digitSum) {
                     for (int l = 0; l < 2; ++l) {
                         if (matrix[digitNumber][remainder][digitSum][l] == 0)
                             continue;
