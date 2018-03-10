@@ -1,11 +1,23 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
 public class Main {
 
+    public static final int UP = 0;
+    public static final int DOWN = 1;
+    public static final int LEFT = 2;
+    public static final int RIGHT = 3;
+    public static final int N = 38;
+    public static final int A = 30;
+
+    //public static int[][][] field = new int[A][A][];
+
+
     public static void main(String[] args) {
 
-        Solution.Dot[] dots = Solution.readFromFile();
+        ArrayList<Solution.Dot> dots = Solution.readFromFile();
         MinDir minDir = new MinDir(dots.length);
         Solution.checkAvailability(dots);
         Solution.solve(dots, 0, minDir);
@@ -41,43 +53,65 @@ class MinDir{
 
 }
 
-class Solution{
+class Solution {
+
+
+    public static final int UP = 0;
+    public static final int DOWN = 1;
+    public static final int LEFT = 2;
+    public static final int RIGHT = 3;
+    public static final int A = 30;
+    public static final int N = 38;
+
+    public static int dp[][][][][] = new int[A][A][A][A][A];
 
     //elements of the task
-    static class Dot{
+    static class Dot implements Comparable<Dot>{
 
-        public Dot(int iSize, int iX, int iY, String[] avD, String dir) {
-            size = iSize;
+        public Dot(int iX, int iY) {
             x = iX;
             y = iY;
-            leftBorder = x;
-            rightBorder = size - x;
-            upBorder = size - y;
-            downBorder = y;
-            availableDirections = avD;
-            direction = dir;
+        }
+
+        public Dot(){
+            x=0;
+            y=0;
         }
 
         @Override
-        public String toString() {
-            return this.direction;
+        public int compareTo(Dot o) {
+            return Integer.compare(x,o.x);
         }
+        @Override
+        public String toString() {
+            return this.direction+"";
+        }
+
 
         public int x;
         public int y;
-        public int size;
-        public String availableDirections[] = {"UP", "DOWN", "LEFT", "RIGHT"};
-        public int leftBorder;
-        public int rightBorder;
-        public int upBorder;
-        public int downBorder;
-        public String direction;
+        public boolean[] availableDirections = {true, true, true, true};
+        public int direction;
 
 
     }
 
+    public static int min (int a, int b, int c, int d, boolean[] two) {
+        if (a == c || a==d || b==c || b==d)
+            two[0] = true;
+        if (a < b && a < c && a < d) {
+            return a;
+        } else if (b < a && b < c && b < d) {
+            return b;
+        } else if (c < a && c < b && c < d) {
+            return c;
+        } else {
+            return d;
+        }
+    }
+
     //reads info from the file
-    public static Dot[] readFromFile(){
+    public static ArrayList<Dot> readFromFile(){
         Scanner scanner;
         try {
             scanner = new Scanner(new File("input.txt"));
@@ -85,21 +119,19 @@ class Solution{
             ex.printStackTrace();
             return null;
         }
-        int size = Integer.parseInt(scanner.next());
-        int arraySize = Integer.parseInt(scanner.next());
-        int i=0;
-        Dot[] dots = new Dot[arraySize];
-        while (scanner.hasNext()) {
-            dots[i] = new Dot(size, Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next()), new String[] {"UP", "DOWN", "LEFT", "RIGHT"}, null);
-            ++i;
+        int size = scanner.nextInt();
+        int arraySize = scanner.nextInt();
+        ArrayList<Dot> dots = new ArrayList<>();
+        for (int i = 0; i < arraySize; ++i) {
+            dots.add(new Dot(scanner.nextInt(), scanner.nextInt()));
         }
-        checkAvailability(dots);
+        Collections.sort(dots);
         return dots;
     }
 
     //writes solution to the file
     public static void writeToFile(MinDir minDir) {
-        FileWriter fout = null;
+        FileWriter fout;
         try {
             fout = new FileWriter("output.txt");
             BufferedWriter bufferedWriter = new BufferedWriter(fout);
@@ -113,41 +145,94 @@ class Solution{
         }
     }
 
-    //checks and deletes unavailable directions for dots
-    public static void checkAvailability(Dot[] dots){
-    for (int i=0; i < dots.length; ++i)
-        for (int j = i + 1; j < dots.length; ++j) {
-            if (dots[i].x == dots[j].x) {
-                if (dots[i].y < dots[j].y) {
-                    dots[i].availableDirections[0] = null;
-                    dots[j].availableDirections[1] = null;
-                }
-                else {
-                    dots[j].availableDirections[0] = null;
-                    dots[i].availableDirections[1] = null;
-                }
-            }
-            if (dots[i].y == dots[j].y) {
-                if (dots[i].x < dots[j].x) {
-                    dots[i].availableDirections[3] = null;
-                    dots[j].availableDirections[2] = null;
-                }
-                else{
-                    dots[j].availableDirections[3] = null;
-                    dots[i].availableDirections[2] = null;
+    public static void checking(Dot[] dots) {
+        for (int i = 0; i < dots.length; ++i) {
+            if (dots[i].availableDirections[0] != null && dots[i].availableDirections[1] != null &&
+                    dots[i].availableDirections[2] != null && dots[i].availableDirections[3] != null) {
+                boolean[] two = new boolean[]{false, false};
+                int minBorder = min(dots[i].leftBorder, dots[i].rightBorder, dots[i].upBorder, dots[i].downBorder, two);
+                boolean fl = false, fr = false, fu = false, fd = false;
+                if (minBorder == dots[i].leftBorder)
+                    fl = true;
+                if (minBorder == dots[i].rightBorder)
+                    fr = true;
+                if (minBorder == dots[i].downBorder)
+                    fd = true;
+                if (minBorder == dots[i].upBorder)
+                    fu = true;
+                if (!two[0]) {
+                    if (fl) {
+                        dots[i].availableDirections = new String[]{null, null, "LEFT", null};
+                        dots[i].direction = "LEFT";
+                    }
+                    if (fr) {
+                        dots[i].availableDirections = new String[]{null, null, null, "RIGHT"};
+                        dots[i].direction = "RIGHT";
+                    }
+                    if (fu) {
+                        dots[i].availableDirections = new String[]{"UP", null, null, null};
+                        dots[i].direction = "UP";
+                    }
+                    if (fd) {
+                        dots[i].availableDirections = new String[]{null, "DOWN", null, null};
+                        dots[i].direction = "DOWN";
+                    }
+                    else if (!(fl && fr && fd && fu)) {
+                        if (fl && fu)
+                            dots[i].availableDirections = new String[]{"UP", null, "LEFT", null};
+                        if (fl && fd)
+                            dots[i].availableDirections = new String[]{null, "DOWN", "LEFT", null};
+                        if (fr && fu)
+                            dots[i].availableDirections = new String[]{"UP", null, null, "RIGHT"};
+                        if (fr && fd)
+                            dots[i].availableDirections = new String[]{null, "DOWN", null, "RIGHT"};
+                    }
                 }
             }
         }
+    }
+
+    //checks and deletes unavailable directions for dots
+    public static boolean checkAvailability(Dot[] dots) {
+        boolean pointer = false;
+        for (int i = 0; i < dots.length; ++i) {
+            for (int j = i + 1; j < dots.length; ++j) {
+                if (dots[i].x == dots[j].x) {
+                    if (dots[i].y < dots[j].y) {
+                        dots[i].availableDirections[0] = null;
+                        dots[j].availableDirections[1] = null;
+                        pointer = true;
+                    } else {
+                        dots[j].availableDirections[0] = null;
+                        dots[i].availableDirections[1] = null;
+                        pointer = true;
+                    }
+                }
+                if (dots[i].y == dots[j].y) {
+                    if (dots[i].x < dots[j].x) {
+                        dots[i].availableDirections[3] = null;
+                        dots[j].availableDirections[2] = null;
+                        pointer = true;
+                    } else {
+                        dots[j].availableDirections[3] = null;
+                        dots[i].availableDirections[2] = null;
+                        pointer = true;
+                    }
+                }
+            }
+
+        }
+        return pointer;
     }
 
     //checks if there any crossings in the directions of two dots
     public static boolean crossingCheck(Dot a, Dot b){
         if ((a.x == b.x) &&
                 ((a.upBorder < b.upBorder &&
-                (a.direction == "DOWN" || b.direction == "UP"))
-                ||
-                (a.upBorder > b.upBorder &&
-                        (b.direction == "DOWN" || a.direction == "UP"))))
+                        (a.direction == "DOWN" || b.direction == "UP"))
+                        ||
+                        (a.upBorder > b.upBorder &&
+                                (b.direction == "DOWN" || a.direction == "UP"))))
             return true;
         if ((a.y == b.y) &&
                 ((a.leftBorder < b.leftBorder &&
@@ -172,97 +257,31 @@ class Solution{
     }
 
     //Main Solution recursive function
-    public static void solve(Dot[] dots, int numberOfDot, MinDir minDir){
-        if (dots.length-1 == numberOfDot)
-        {
-            boolean b = true;
-            if (wayExists(dots, numberOfDot, "UP")) {
-                dots[numberOfDot].direction = "UP";
-                for (int i = 0; i < dots.length; ++i) {
-                    for (int j = i + 1; j < dots.length; ++j) {
-                        if (crossingCheck(dots[i], dots[i]) == true) {
-                            b = false;
-                            i = dots.length;
-                            j = dots.length;
-                        }
-                    }
-                }
-                if (b == true && minDir.minLength > directionsSummary(dots)) {
-                    minDir.minLength = directionsSummary(dots);
-                    minDir.setDots(dots);
-                }
-            }
-                b = true;
-            if (wayExists(dots, numberOfDot, "DOWN")) {
-                dots[numberOfDot].direction = "DOWN";
-                for (int i = 0; i < dots.length; ++i) {
-                    for (int j = i + 1; j < dots.length; ++j) {
-                        if (crossingCheck(dots[i], dots[i]) == true) {
-                            b = false;
-                            i = dots.length;
-                            j = dots.length;
-                        }
-                    }
-                }
-                if (b == true && minDir.minLength > directionsSummary(dots)) {
-                    minDir.minLength = directionsSummary(dots);
-                    minDir.setDots(dots);
-                }
-            }
-            b = true;
-            if (wayExists(dots, numberOfDot, "LEFT")) {
-                dots[numberOfDot].direction = "LEFT";
-                for (int i = 0; i < dots.length; ++i) {
-                    for (int j = i + 1; j < dots.length; ++j) {
-                        if (crossingCheck(dots[i], dots[i]) == true) {
-                            b = false;
-                            i = dots.length;
-                            j = dots.length;
-                        }
-                    }
-                }
-                if (b == true && minDir.minLength > directionsSummary(dots)) {
-                    minDir.minLength = directionsSummary(dots);
-                    minDir.setDots(dots);
-                }
-            }
-            b = true;
-            if (wayExists(dots, numberOfDot, "RIGHT")) {
-                dots[numberOfDot].direction = "RIGHT";
-                for (int i = 0; i < dots.length; ++i) {
-                    for (int j = i + 1; j < dots.length; ++j) {
-                        if (crossingCheck(dots[i], dots[i]) == true) {
-                            b = false;
-                            i = dots.length;
-                            j = dots.length;
-                        }
-                    }
-                }
-                if (b == true && minDir.minLength > directionsSummary(dots)) {
-                    minDir.minLength = directionsSummary(dots);
-                    minDir.setDots(dots);
-                }
-            }
-            return;
-        }
-        else {
-            if (wayExists(dots, numberOfDot, "UP")) {
-                dots[numberOfDot].direction = "UP";
-                solve(createArrayCopy(dots), numberOfDot + 1, minDir);
-            }
-            if (wayExists((dots), numberOfDot, "DOWN")) {
-                dots[numberOfDot].direction = "DOWN";
-                solve(createArrayCopy(dots), numberOfDot + 1, minDir);
-            }
-            if (wayExists((dots), numberOfDot, "LEFT")) {
-                dots[numberOfDot].direction = "LEFT";
-                solve(dots, numberOfDot + 1, minDir);
-            }
-            if (wayExists((dots), numberOfDot, "RIGHT")) {
-                dots[numberOfDot].direction = "RIGHT";
-                solve(createArrayCopy(dots), numberOfDot + 1, minDir);
-            }
+    public static void solve(int left, int top, int bottom, int topAllowed, int bottomAllowed){
 
+
+
+
+    }
+
+    // helper function for the main solution
+    public static void helpSolution (Dot[] dots, int numberOfDot, MinDir minDir, String direct){
+        boolean b = true;
+        if (wayExists(dots, numberOfDot, direct)) {
+            dots[numberOfDot].direction = direct;
+            for (int i = 0; i < dots.length; ++i) {
+                for (int j = i + 1; j < dots.length; ++j) {
+                    if (crossingCheck(dots[i], dots[j])) {
+                        b = false;
+                        i = dots.length;
+                        j = dots.length;
+                    }
+                }
+            }
+            if (b && minDir.minLength > directionsSummary(dots)) {
+                minDir.minLength = directionsSummary(dots);
+                minDir.setDots(dots);
+            }
         }
     }
 
@@ -270,7 +289,7 @@ class Solution{
     public static Dot[] createArrayCopy(Dot[] dots){
         Dot[] temp = new Dot[dots.length];
         for (int i=0; i< dots.length; ++i) {
-            Solution.Dot kaka = new Solution.Dot(dots[i].size, dots[i].x, dots[i].y, dots[i].availableDirections, dots[i].direction);
+            Solution.Dot kaka = new Solution.Dot(dots[i].size, dots[i].x, dots[i].y, dots[i].availableDirections, dots[i].temporateDirections, dots[i].direction);
             temp[i] = kaka;
         }
         return temp;
@@ -292,23 +311,17 @@ class Solution{
         return sum;
     }
 
-
     public static boolean wayExists(Dot[] dots, int numberOfDot, String dir){
-        dots[numberOfDot].availableDirections = new String[] {"UP", "DOWN", "LEFT", "RIGHT"};
-        cuttingDirections(dots, numberOfDot);
         if (dots[numberOfDot].availableDirections[0] == dir || dots[numberOfDot].availableDirections[1] == dir
                 || dots[numberOfDot].availableDirections[2] == dir || dots[numberOfDot].availableDirections[3] == dir) {
-            Dot[] temp = new Dot[dots.length];
-            for (int i=0; i<dots.length; ++i) {
-                Dot kaka = new Dot(dots[i].size, dots[i].x, dots[i].y, dots[i].availableDirections, dots[i].direction);
-                temp[i] = kaka;
-            }
-            temp[numberOfDot].direction = dir;
+            dots[numberOfDot].temporateDirections = dots[numberOfDot].availableDirections;
+            Dot[] temp = createArrayCopy(dots);
             cuttingDirections(temp, numberOfDot);
-            if (dots[numberOfDot].availableDirections[0] == null && dots[numberOfDot].availableDirections[1] == null
-                    && dots[numberOfDot].availableDirections[2] == null && dots[numberOfDot].availableDirections[3] == null)
-                return false;
-            return true;
+            if (temp[numberOfDot].temporateDirections[0] == dir || temp[numberOfDot].temporateDirections[1] == dir
+                    || temp[numberOfDot].temporateDirections[2] == dir || temp[numberOfDot].temporateDirections[3] == dir) {
+                temp[numberOfDot].direction = dir;
+                return true;
+            }
         }
         return false;
     }
@@ -318,27 +331,27 @@ class Solution{
         for (int i = 0; i<numberOfDot; ++i){
             if (dots[numberOfDot].direction == "UP" && dots[numberOfDot].upBorder >= dots[i].upBorder){
                 if (dots[numberOfDot].leftBorder >= dots[i].leftBorder)
-                    dots[i].availableDirections[3] = null;
+                    dots[i].temporateDirections[3] = null;
                 else
-                    dots[i].availableDirections[2] = null;
+                    dots[i].temporateDirections[2] = null;
             }
             if (dots[numberOfDot].direction == "DOWN" && dots[numberOfDot].downBorder >= dots[i].downBorder) {
                 if (dots[numberOfDot].leftBorder >= dots[i].leftBorder)
-                    dots[i].availableDirections[3] = null;
+                    dots[i].temporateDirections[3] = null;
                 else
-                    dots[i].availableDirections[2] = null;
+                    dots[i].temporateDirections[2] = null;
             }
             if (dots[numberOfDot].direction == "LEFT" && dots[numberOfDot].leftBorder >= dots[i].leftBorder){
                 if (dots[numberOfDot].downBorder >= dots[i].downBorder)
-                    dots[i].availableDirections[0] = null;
+                    dots[i].temporateDirections[0] = null;
                 else
-                    dots[i].availableDirections[1] = null;
+                    dots[i].temporateDirections[1] = null;
             }
             if (dots[numberOfDot].direction == "RIGHT" && dots[numberOfDot].rightBorder >= dots[i].rightBorder){
                 if (dots[numberOfDot].downBorder >= dots[i].downBorder)
-                    dots[i].availableDirections[0] = null;
+                    dots[i].temporateDirections[0] = null;
                 else
-                    dots[i].availableDirections[1] = null;
+                    dots[i].temporateDirections[1] = null;
             }
         }
     }
