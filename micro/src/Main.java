@@ -6,16 +6,16 @@ import java.util.Scanner;
 import static java.lang.Integer.min;
 
 
-class Main {
+public class Main implements Runnable {
 
     public static final int UP = 0;
     public static final int RIGHT = 1;
     public static final int DOWN = 2;
     public static final int LEFT = 3;
 
-    public static int dp[][][][][] = new int[30][30][30][30][16];
-    public static boolean existence[][][][][] = new boolean[30][30][30][30][16];
-    public static int answer[][] = new int[30][30];
+    public static int dp[][][][][] = new int[31][31][31][31][16];
+    public static boolean existence[][][][][] = new boolean[31][31][31][31][16];
+    public static int answer[][] = new int[31][31];
 
     public static int n, a;
     public static ArrayList<ArrayList<Integer>> horizontals = new ArrayList<>(), verticals = new ArrayList<>();
@@ -70,7 +70,7 @@ class Main {
     }
 
     //interprets bytes of directionsArray into direction
-    public static int flagToDirection(int directionsArray) {
+    public static int directionsArrayToDirection(int directionsArray) {
         return (directionsArray + 3) % 4;
     }
 
@@ -350,14 +350,16 @@ class Main {
                         answer[verticals.get(bottom).get(i)][bottom] = RIGHT;
                     }
                     restoreSolution(left, top, right, bottom - 1, directionsArray);
-                    return;
                 }
             }
         }
     }
     
     public static void main(String[] args) {
+        new Thread(null, new Main(), "", 256 * 1024 * 1024).start();
+    }
 
+    public void run(){
         Scanner scanner;
         try {
             scanner = new Scanner(new File("input.txt"));
@@ -368,7 +370,7 @@ class Main {
         a = Integer.parseInt(scanner.next());
         n = Integer.parseInt(scanner.next());
 
-        for (int i = 0; i < 38; ++i) {
+        for (int i = 0; i < 39; ++i) {
             horizontals.add(new ArrayList<>());
             verticals.add(new ArrayList<>());
         }
@@ -381,7 +383,7 @@ class Main {
             verticals.get(y).add(x);
         }
 
-        for (int i = 0; i < 30; ++i) {
+        for (int i = 0; i < 31; ++i) {
             Collections.sort(horizontals.get(i));
             Collections.sort(verticals.get(i));
         }
@@ -394,7 +396,7 @@ class Main {
             restoreSolution(1, 1, a - 1, a - 1, 0);
             for (int i = 0; i < points.size(); ++i) {
                 Point temp = points.get(i);
-                switch (flagToDirection(answer[temp.x][temp.y])) {
+                switch (directionsArrayToDirection(answer[temp.x][temp.y])) {
                     case UP:
                         fout.write("UP\n");
                         break;
@@ -413,5 +415,7 @@ class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
+
 }
