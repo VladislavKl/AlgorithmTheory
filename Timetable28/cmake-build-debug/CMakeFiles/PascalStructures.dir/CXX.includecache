@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/klyuevvladislav/CLionProjects/PascalStructures/main.cpp
+iostream
+-
+fstream
+-
+vector
+-
+set
+-
+ctime
+-
+
