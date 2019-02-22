@@ -1,0 +1,3 @@
+/Users/klyuevvladislav/CLionProjects/Shooting 35/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/klyuevvladislav/CLionProjects/Shooting 35/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/klyuevvladislav/CLionProjects/Shooting 35/cmake-build-debug/CMakeFiles/Shooting_35.dir
